@@ -1,3 +1,5 @@
+import sys
+import logging
 import requests
 import json
 
@@ -6,7 +8,7 @@ import json
 #Current api is 'https://api.lifx.com/v1/lights/' but is a parmeter if this should change
 class LifxProxy():
 
-    def __init__(self, baseUri, token):
+    def __init__(self, baseUri, token, loggingStream = sys.stderr, debuggingLevel = logging.DEBUG, loggingFile = ''):
         if not type(baseUri) is str:
             raise TypeError('baseUri must be of type string')
         
@@ -20,19 +22,34 @@ class LifxProxy():
         self._headers = {
             'Authorization': 'Bearer %s' % token
         }
-        
 
+        if not loggingFile.strip():
+            logging.basicConfig(filename = loggingFile, level = debuggingLevel)
+        else:
+            logging.basicConfig(stream = loggingStream, level = debuggingLevel)
 
     def GetAllLifxs(self):
         selector = 'all';
 
-        response = requests.get('%s%s' % (self._baseUri, selector), headers = self._headers)
+        uri = '%s%s' % (self._baseUri, selector)
+
+        response = requests.get(uri, headers = self._headers)
 
         result = LifxProxyResult(999, {})
         if response:
             result = LifxProxyResult(response.status_code, json.loads(response.text))
 
         return result
+
+    def ToggleAllLights(self):
+        selector = 'all/toggle';
+
+        uri = '%s%s' % (self._baseUri, selector)
+
+        response = requests.get(uri, headers = self._headers)
+
+        return response
+        
 
     def AllLightsOff(self):
         selector = 'all/state'
@@ -41,7 +58,10 @@ class LifxProxy():
             'power': 'off'
         }
 
-        response = request.get('%s%s' % (self._baseUri, selector), headers = self._headers, data = payload)
+        uri = '%s%s' % (self._baseUri, selector)
+        response = requests.get(uri,  data = payload, headers = self._headers)
+
+        return json.loads(response.text)      
 
     def AllLightsOn(self):
         selector = 'all/state';
@@ -49,9 +69,12 @@ class LifxProxy():
         payload = {
             'power': 'on'
         }
+
+        uri = '%s%s' % (self._baseUri, selector)
         
-        response = request.get('%s%s' % (self._baseUri, selector), headers = self._headers, data = payload)
-        
+        response = requests.get(uri,  data = payload, headers = self._headers)
+
+        return json.loads(response.text)
 
 
 class LifxProxyResult():
