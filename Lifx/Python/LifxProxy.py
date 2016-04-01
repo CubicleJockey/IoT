@@ -61,7 +61,7 @@ class LifxProxy():
 
         uri = '%s%s' % (self._baseUri, selector)
         print(uri)
-        response = requests.get(uri, headers = self._headers)
+        response = requests.post(uri, headers = self._headers)
 
         return response
         
@@ -70,7 +70,7 @@ class LifxProxy():
         selector = 'all/toggle';
 
         uri = '%s%s' % (self._baseUri, selector)
-        response = requests.get(uri, headers = self._headers)
+        response = requests.post(uri, headers = self._headers)
 
         return response
         
@@ -83,7 +83,7 @@ class LifxProxy():
         }
 
         uri = '%s%s' % (self._baseUri, selector)
-        response = requests.get(uri, data = payload,  headers = self._headers)
+        response = requests.put(uri, data = payload,  headers = self._headers)
 
         return json.loads(response.text)      
 
@@ -95,7 +95,7 @@ class LifxProxy():
         }
 
         uri = '%s%s' % (self._baseUri, selector)
-        response = requests.get(uri, data = payload,  headers = self._headers)
+        response = requests.put(uri, data = payload,  headers = self._headers)
 
         return json.loads(response.text)
 
