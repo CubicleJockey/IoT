@@ -32,7 +32,7 @@ class LifxProxy():
         selector = 'all';
 
         uri = '%s%s' % (self._baseUri, selector)
-
+        print(uri)
         response = requests.get(uri, headers = self._headers)
 
         result = LifxProxyResult(999, {})
@@ -41,11 +41,35 @@ class LifxProxy():
 
         return result
 
+    def ToggleLight(self, value, selectorType = 'all'):
+        if not selectorType == 'all':
+            if value == None:
+                raise TypeError('[value] cannot be None.')
+        
+        typeSwitch = {
+            'id': 'id:%s' % value,
+            'label': 'label:%s' % value,
+            'group_id': 'group_id:%s' % value,
+            'group': 'group:%s' % value,
+            'location_id': 'location_id:%s' % value,
+            'location': 'location:%s' % value,
+            'scene_id': 'scene_id:%s' % value
+        }
+
+        #If nothing just for fun Toggle ALL lights
+        selector = '%s/toggle' % typeSwitch.get(selectorType, 'all')   
+
+        uri = '%s%s' % (self._baseUri, selector)
+        print(uri)
+        response = requests.get(uri, headers = self._headers)
+
+        return response
+        
+
     def ToggleAllLights(self):
         selector = 'all/toggle';
 
         uri = '%s%s' % (self._baseUri, selector)
-
         response = requests.get(uri, headers = self._headers)
 
         return response
@@ -59,7 +83,7 @@ class LifxProxy():
         }
 
         uri = '%s%s' % (self._baseUri, selector)
-        response = requests.get(uri,  data = payload, headers = self._headers)
+        response = requests.get(uri, data = payload,  headers = self._headers)
 
         return json.loads(response.text)      
 
@@ -71,8 +95,7 @@ class LifxProxy():
         }
 
         uri = '%s%s' % (self._baseUri, selector)
-        
-        response = requests.get(uri,  data = payload, headers = self._headers)
+        response = requests.get(uri, data = payload,  headers = self._headers)
 
         return json.loads(response.text)
 
