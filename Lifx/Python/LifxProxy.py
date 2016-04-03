@@ -63,7 +63,7 @@ class LifxProxy():
         print(uri)
         response = requests.post(uri, headers = self._headers)
 
-        return response
+        return LifxProxyResult(response.status_code, json.loads(response.text))
         
 
     def ToggleAllLights(self):
@@ -72,7 +72,7 @@ class LifxProxy():
         uri = '%s%s' % (self._baseUri, selector)
         response = requests.post(uri, headers = self._headers)
 
-        return response
+        return LifxProxyResult(response.status_code, json.loads(response.text))
         
 
     def AllLightsOff(self):
@@ -85,7 +85,7 @@ class LifxProxy():
         uri = '%s%s' % (self._baseUri, selector)
         response = requests.put(uri, data = payload,  headers = self._headers)
 
-        return json.loads(response.text)      
+        return LifxProxyResult(response.status_code, json.loads(response.text))      
 
     def AllLightsOn(self):
         selector = 'all/state';
@@ -97,9 +97,61 @@ class LifxProxy():
         uri = '%s%s' % (self._baseUri, selector)
         response = requests.put(uri, data = payload,  headers = self._headers)
 
-        return json.loads(response.text)
+        return LifxProxyResult(response.status_code, json.loads(response.text))
 
+    #Change the State of the lightbulb
+    #Control
+    #    -Color (string) : name, hex 
+    #    -Brightness (double): double value defaults to 100 (1.0)%
+    def ChangeAllLightSettings(self, colorValue, brightness = 1.0):
+        selector = 'all/state';
 
+        payload = {
+            'color': colorValue,
+            'brightness': brightness
+        }
+
+        uri = '%s%s' % (self._baseUri, selector)
+        response = requests.put(uri, data = payload,  headers = self._headers)
+
+        return LifxProxyResult(response.status_code, json.loads(response.text))
+
+    def ChangeLightColor(self, color, selectorValue, selectorType = 'all'):
+        if not selectorType == 'all':
+            if selectorValue == None:
+                raise TypeError('[value] cannot be None.')
+        
+        typeSwitch = {
+            'id': 'id:%s' % selectorValue,
+            'label': 'label:%s' % selectorValue,
+            'group_id': 'group_id:%s' % selectorValue,
+            'group': 'group:%s' % selectorValue,
+            'location_id': 'location_id:%s' % selectorValue,
+            'location': 'location:%s' % selectorValue,
+            'scene_id': 'scene_id:%s' % selectorValue
+        }
+        
+        selector = '%s/state' % typeSwitch.get(selectorType)
+
+        payload = {
+            'color': color
+        }
+
+        uri = '%s%s' % (self._baseUri, selector)
+        response =  requests.put(uri, data = payload, headers = self._headers)
+
+        return LifxProxyResult(response.status_code, json.loads(response.text))
+
+    def GetScenes(self):
+        selector = 'scenes'
+
+        uri = '%s%s' % (self._baseUri.split('lights')[0], selector)
+
+        response = requests.get(uri, headers = self._headers)
+
+        return LifxProxyResult(response.status_code, response.text)
+
+#Lifx Proxy Result
 class LifxProxyResult():
 
     def __init__(self, code, jsonResult):
@@ -109,4 +161,10 @@ class LifxProxyResult():
         self.responseCode = code
         self.result = jsonResult
 
-    
+#class Color
+class LifxColor():
+
+    def __init__(self, saturation, kelvin, hue):
+        self.saturation = saturation
+        self.kelvin = kelvin
+        self.hue = hue
