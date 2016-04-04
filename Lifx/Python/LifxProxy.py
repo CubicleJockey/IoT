@@ -151,6 +151,23 @@ class LifxProxy():
 
         return LifxProxyResult(response.status_code, response.text)
 
+    def ValidateColor(self, color):
+        if color is None:
+            raise TypeError('<color> cannot be None')
+
+        selector = 'color'
+        uri = '%s%s' % (self._baseUri.split('lights')[0], selector)
+
+        payload = {
+            'string': color
+        }
+
+        response = requests.get(uri, data = payload, headers = self._headers)
+
+        return LifxProxyResult(response.status_code, response.text)
+        
+        
+
 #Lifx Proxy Result
 class LifxProxyResult():
 
